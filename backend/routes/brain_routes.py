@@ -9,7 +9,9 @@ from models.settings import common_dependencies
 from models.users import User
 from pydantic import BaseModel
 
-from routes.authorizations.brain_authorization import has_brain_authorization
+from routes.authorizations.brain_authorization import (
+    has_brain_authorization,
+)
 
 logger = get_logger(__name__)
 
@@ -76,10 +78,7 @@ async def get_default_brain_endpoint(current_user: User = Depends(get_current_us
 # get one brain
 @brain_router.get(
     "/brains/{brain_id}/",
-    dependencies=[
-        Depends(AuthBearer()),
-        Depends(has_brain_authorization),
-    ],
+    dependencies=[Depends(AuthBearer()), Depends(has_brain_authorization())],
     tags=["Brain"],
 )
 async def get_brain_endpoint(
@@ -109,10 +108,7 @@ async def get_brain_endpoint(
 # delete one brain
 @brain_router.delete(
     "/brains/{brain_id}/",
-    dependencies=[
-        Depends(AuthBearer()),
-        Depends(has_brain_authorization),
-    ],
+    dependencies=[Depends(AuthBearer()), Depends(has_brain_authorization())],
     tags=["Brain"],
 )
 async def delete_brain_endpoint(
@@ -122,8 +118,6 @@ async def delete_brain_endpoint(
     """
     Delete a specific brain by brain ID.
     """
-    # [TODO] check if the user is the owner of the brain
-
     brain = Brain(id=brain_id)
     brain.delete_brain(current_user.id)
 
@@ -186,14 +180,13 @@ async def create_brain_endpoint(
         Depends(
             AuthBearer(),
         ),
-        Depends(has_brain_authorization),
+        Depends(has_brain_authorization()),
     ],
     tags=["Brain"],
 )
 async def update_brain_endpoint(
     brain_id: UUID,
     input_brain: Brain,
-    current_user: User = Depends(get_current_user),
 ):
     """
     Update an existing brain with new brain parameters/files.
